@@ -157,7 +157,7 @@ def clock_in():
         flash("You have already clocked in today.", "warning")
         return redirect(url_for("dashboard"))
 
-    now = datetime.now(MYT).replace(tzinfo=None)
+    now = datetime.now(MYT).replace(tzinfo=None, microsecond=0)
     work_start = now.replace(
         hour=app.config["WORK_START_HOUR"],
         minute=app.config["LATE_THRESHOLD_MINUTES"],
@@ -203,7 +203,7 @@ def clock_out():
         flash("You have already clocked out. You can clock in again.", "info")
         return redirect(url_for("dashboard"))
 
-    record.clock_out = datetime.now(MYT).replace(tzinfo=None)
+    record.clock_out = datetime.now(MYT).replace(tzinfo=None, microsecond=0)
     record.calculate_work_hours()
     db.session.commit()
     flash(
