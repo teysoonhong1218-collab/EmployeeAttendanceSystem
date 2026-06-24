@@ -3,8 +3,9 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # ── Database URL ──────────────────────────────────────────────
+SUPABASE_DB_URL = "postgresql://postgres.iacfhlxaxosfuhsgeimw:TSE6223_project@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres"
 SQLITE_URL = "sqlite:///" + os.path.join(BASE_DIR, "attendance.db")
-DB_URL = os.environ.get("DATABASE_URL", SQLITE_URL)
+DB_URL = os.environ.get("DATABASE_URL", SUPABASE_DB_URL)
 
 
 class Config:
