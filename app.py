@@ -125,15 +125,35 @@ def dashboard():
 
 # ── Clock In / Out ──────────────────────────────────────────────
 
+def auto_clock_out_previous(employee_id):
+    yesterday_records = (
+        Attendance.query.filter(
+            Attendance.employee_id == employee_id,
+            Attendance.clock_in.isnot(None),
+            Attendance.clock_out.is_(None),
+            Attendance.date < date.today(),
+        ).all()
+    )
+    for record in yesterday_records:
+        record.clock_out = datetime.combine(record.date, datetime.min.time()).replace(
+            hour=23, minute=59, second=59
+        )
+        record.calculate_work_hours()
+    if yesterday_records:
+        db.session.commit()
+
+
 @app.route("/clock-in", methods=["POST"])
 @login_required
 def clock_in():
+    auto_clock_out_previous(current_user.id)
+
     today = date.today()
     existing = Attendance.query.filter_by(
         employee_id=current_user.id, date=today
     ).first()
 
-    if existing and existing.clock_in:
+    if existing and existing.clock_in and not existing.clock_out:
         flash("You have already clocked in today.", "warning")
         return redirect(url_for("dashboard"))
 
@@ -148,6 +168,8 @@ def clock_in():
 
     if existing:
         existing.clock_in = now
+        existing.clock_out = None
+        existing.work_hours = None
         existing.status = status
     else:
         record = Attendance(
@@ -178,7 +200,7 @@ def clock_out():
         flash("You haven't clocked in today.", "warning")
         return redirect(url_for("dashboard"))
     if record.clock_out:
-        flash("You have already clocked out today.", "warning")
+        flash("You have already clocked out. You can clock in again.", "info")
         return redirect(url_for("dashboard"))
 
     record.clock_out = datetime.now(MYT).replace(tzinfo=None)
