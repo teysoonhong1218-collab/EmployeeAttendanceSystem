@@ -28,9 +28,13 @@
             Clocked in at {{ today_attendance.clock_in.strftime('%I:%M %p') }}
         </div>
         {% else %}
-        <div style="font-size:0.9rem;opacity:0.8">
-            <i class="fas fa-check-circle me-1"></i>
-            Completed — {{ today_attendance.work_hours|round(1) }} hours today
+        <form method="POST" action="{{ url_for('clock_in') }}" style="display:inline">
+            <button type="submit" class="btn-clock">
+                <i class="fas fa-sign-in-alt me-2"></i>Clock In Again
+            </button>
+        </form>
+        <div class="mt-2" style="font-size:0.85rem;opacity:0.8">
+            Last session — {{ today_attendance.work_hours|round(1) }} hours
         </div>
         {% endif %}
     </div>
