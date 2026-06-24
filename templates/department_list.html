@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Departments{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Departments</h1>
+        <p>Manage company departments</p>
+    </div>
+    <a href="{{ url_for('department_add') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Add Department
+    </a>
+</div>
+
+<div class="row">
+    {% for dept in departments %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="mb-0"><i class="fas fa-building me-2 text-primary"></i>{{ dept.name }}</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('department_edit', dept_id=dept.id) }}"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('department_delete', dept_id=dept.id) }}">
+                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete this department?')">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="text-muted small mb-3">{{ dept.description or 'No description' }}</p>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users text-muted me-2"></i>
+                    <span class="text-muted">{{ dept.employees|length }} employee{{ 's' if dept.employees|length != 1 else '' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not departments %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <i class="fas fa-sitemap"></i>
+            <h5>No departments yet</h5>
+            <p>Create your first department to organize employees.</p>
+            <a href="{{ url_for('department_add') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-1"></i>Add Department
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

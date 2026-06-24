@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Employees</h1>
+        <p>Manage all employees in the system</p>
+    </div>
+    <a href="{{ url_for('employee_add') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Add Employee
+    </a>
+</div>
+
+<!-- Search -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" placeholder="Search by name or employee ID..." value="{{ search }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>Search</button>
+            </div>
+            {% if search %}
+            <div class="col-auto">
+                <a href="{{ url_for('employee_list') }}" class="btn btn-outline-secondary">Clear</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Employee Table -->
+<div class="card">
+    <div class="card-body p-0">
+        {% if employees.items %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees.items %}
+                    <tr>
+                        <td><strong>{{ emp.employee_id }}</strong></td>
+                        <td>{{ emp.full_name }}</td>
+                        <td>{{ emp.email }}</td>
+                        <td>{{ emp.department.name if emp.department else 'N/A' }}</td>
+                        <td>{{ emp.position or 'N/A' }}</td>
+                        <td><span class="text-capitalize">{{ emp.role }}</span></td>
+                        <td>
+                            <span class="badge-status badge-{{ 'active' if emp.is_active else 'inactive' }}">
+                                {{ 'Active' if emp.is_active else 'Inactive' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{{ url_for('employee_detail', emp_id=emp.id) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('employee_edit', emp_id=emp.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('employee_toggle', emp_id=emp.id) }}" style="display:inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-{{ 'danger' if emp.is_active else 'success' }}" title="{{ 'Deactivate' if emp.is_active else 'Activate' }}">
+                                        <i class="fas fa-{{ 'ban' if emp.is_active else 'check' }}"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if employees.pages > 1 %}
+        <div class="d-flex justify-content-center py-3">
+            <nav>
+                <ul class="pagination mb-0">
+                    {% if employees.has_prev %}
+                    <li class="page-item"><a class="page-link" href="?page={{ employees.prev_num }}&search={{ search }}">Previous</a></li>
+                    {% endif %}
+                    {% for p in employees.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <li class="page-item {% if p == employees.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&search={{ search }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if employees.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ employees.next_num }}&search={{ search }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h5>No employees found</h5>
+            <p>{% if search %}Try a different search term.{% else %}Add your first employee to get started.{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

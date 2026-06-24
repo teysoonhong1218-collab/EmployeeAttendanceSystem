@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>My Dashboard</h1>
+    <p>Welcome, {{ current_user.first_name }}. Have a productive day!</p>
+</div>
+
+<!-- Clock Widget -->
+<div class="clock-widget">
+    <div class="time" id="live-clock">--:--:--</div>
+    <div class="date" id="live-date"></div>
+    <div class="mt-3">
+        {% if not today_attendance or not today_attendance.clock_in %}
+        <form method="POST" action="{{ url_for('clock_in') }}" style="display:inline">
+            <button type="submit" class="btn-clock">
+                <i class="fas fa-sign-in-alt me-2"></i>Clock In
+            </button>
+        </form>
+        {% elif not today_attendance.clock_out %}
+        <form method="POST" action="{{ url_for('clock_out') }}" style="display:inline">
+            <button type="submit" class="btn-clock clocked-in">
+                <i class="fas fa-sign-out-alt me-2"></i>Clock Out
+            </button>
+        </form>
+        <div class="mt-2" style="font-size:0.85rem;opacity:0.8">
+            Clocked in at {{ today_attendance.clock_in.strftime('%I:%M %p') }}
+        </div>
+        {% else %}
+        <div style="font-size:0.9rem;opacity:0.8">
+            <i class="fas fa-check-circle me-1"></i>
+            Completed — {{ today_attendance.work_hours|round(1) }} hours today
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+        <div class="stat-info">
+            <h3>{{ monthly_stats.present }}</h3>
+            <p>Days Present (This Month)</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+            <h3>{{ monthly_stats.late }}</h3>
+            <p>Days Late</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-info">
+            <h3>{{ monthly_stats.total_hours }}</h3>
+            <p>Total Hours</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="fas fa-calendar-minus"></i></div>
+        <div class="stat-info">
+            <h3>{{ pending_leaves }}</h3>
+            <p>Pending Leave Requests</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-pie me-2"></i>My Monthly Attendance
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle me-2"></i>My Details
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><td class="text-muted" style="width:40%">Employee ID</td><td><strong>{{ current_user.employee_id }}</strong></td></tr>
+                    <tr><td class="text-muted">Name</td><td>{{ current_user.full_name }}</td></tr>
+                    <tr><td class="text-muted">Email</td><td>{{ current_user.email }}</td></tr>
+                    <tr><td class="text-muted">Department</td><td>{{ current_user.department.name if current_user.department else 'N/A' }}</td></tr>
+                    <tr><td class="text-muted">Position</td><td>{{ current_user.position or 'N/A' }}</td></tr>
+                    <tr><td class="text-muted">Date Joined</td><td>{{ current_user.date_joined.strftime('%d %B %Y') if current_user.date_joined else 'N/A' }}</td></tr>
+                </table>
+                <div class="mt-3">
+                    <a href="{{ url_for('leave_apply') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Apply Leave
+                    </a>
+                    <a href="{{ url_for('attendance_list') }}" class="btn btn-outline-primary btn-sm ms-2">
+                        <i class="fas fa-calendar me-1"></i>View Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>loadAttendanceChart("attendanceChart");</script>
+{% endblock %}

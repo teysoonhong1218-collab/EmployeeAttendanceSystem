@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Attendance Reports</h1>
+    <p>Monthly attendance summary and department statistics</p>
+</div>
+
+<!-- Month Filter -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-auto">
+                <label class="form-label">Month</label>
+                <select name="month" class="form-select">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == month %}selected{% endif %}>
+                        {{ ['January','February','March','April','May','June','July','August','September','October','November','December'][m-1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label">Year</label>
+                <select name="year" class="form-select">
+                    {% for y in range(2024, 2028) %}
+                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Generate</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Department Summary -->
+<div class="card mb-4">
+    <div class="card-header"><i class="fas fa-building me-2"></i>Department Summary</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Employees</th>
+                        <th>Total Present</th>
+                        <th>Total Late</th>
+                        <th>Total Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept_name, stats in dept_stats.items() %}
+                    <tr>
+                        <td><strong>{{ dept_name }}</strong></td>
+                        <td>{{ stats.employee_count }}</td>
+                        <td><span class="text-success">{{ stats.present }}</span></td>
+                        <td><span class="text-warning">{{ stats.late }}</span></td>
+                        <td><span class="text-danger">{{ stats.absent }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Report -->
+<div class="card">
+    <div class="card-header"><i class="fas fa-users me-2"></i>Employee Attendance Summary</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Present</th>
+                        <th>Late</th>
+                        <th>Absent</th>
+                        <th>Total Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data %}
+                    <tr>
+                        <td>{{ item.employee.employee_id }}</td>
+                        <td><strong>{{ item.employee.full_name }}</strong></td>
+                        <td>{{ item.employee.department.name if item.employee.department else 'N/A' }}</td>
+                        <td><span class="text-success">{{ item.stats.present }}</span></td>
+                        <td><span class="text-warning">{{ item.stats.late }}</span></td>
+                        <td><span class="text-danger">{{ item.stats.absent }}</span></td>
+                        <td>{{ item.stats.total_hours }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

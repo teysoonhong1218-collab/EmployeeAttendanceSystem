@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Attendance Records{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Attendance Records</h1>
+        <p>View {% if current_user.role in ['admin', 'hr'] %}all employee{% else %}your{% endif %} attendance history</p>
+    </div>
+</div>
+
+<!-- Month Filter -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-auto">
+                <label class="form-label">Month</label>
+                <select name="month" class="form-select">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == month %}selected{% endif %}>
+                        {{ ['January','February','March','April','May','June','July','August','September','October','November','December'][m-1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label">Year</label>
+                <select name="year" class="form-select">
+                    {% for y in range(2024, 2028) %}
+                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Records Table -->
+<div class="card">
+    <div class="card-body p-0">
+        {% if records.items %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        {% if current_user.role in ['admin', 'hr'] %}
+                        <th>Employee</th>
+                        {% endif %}
+                        <th>Date</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Hours</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records.items %}
+                    <tr>
+                        {% if current_user.role in ['admin', 'hr'] %}
+                        <td>
+                            <strong>{{ record.employee.full_name }}</strong><br>
+                            <small class="text-muted">{{ record.employee.employee_id }}</small>
+                        </td>
+                        {% endif %}
+                        <td>{{ record.date.strftime('%d %b %Y') }}</td>
+                        <td>{{ record.clock_in.strftime('%I:%M %p') if record.clock_in else '-' }}</td>
+                        <td>{{ record.clock_out.strftime('%I:%M %p') if record.clock_out else '-' }}</td>
+                        <td>{{ '%.1f'|format(record.work_hours) if record.work_hours else '-' }}</td>
+                        <td><span class="badge-status badge-{{ record.status }}">{{ record.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if records.pages > 1 %}
+        <div class="d-flex justify-content-center py-3">
+            <nav>
+                <ul class="pagination mb-0">
+                    {% if records.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ records.prev_num }}&month={{ month }}&year={{ year }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for p in records.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <li class="page-item {% if p == records.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&month={{ month }}&year={{ year }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if records.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ records.next_num }}&month={{ month }}&year={{ year }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h5>No attendance records found</h5>
+            <p>No records for the selected period.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ emp.full_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>{{ emp.full_name }}</h1>
+        <p>{{ emp.employee_id }} &middot; {{ emp.position or 'No Position' }}</p>
+    </div>
+    <div>
+        <a href="{{ url_for('employee_edit', emp_id=emp.id) }}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-edit me-1"></i>Edit
+        </a>
+        <a href="{{ url_for('employee_list') }}" class="btn btn-outline-secondary btn-sm ms-1">Back</a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Employee Info -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-user me-2"></i>Employee Information</div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr><td class="text-muted">Employee ID</td><td><strong>{{ emp.employee_id }}</strong></td></tr>
+                    <tr><td class="text-muted">Email</td><td>{{ emp.email }}</td></tr>
+                    <tr><td class="text-muted">Phone</td><td>{{ emp.phone or 'N/A' }}</td></tr>
+                    <tr><td class="text-muted">Department</td><td>{{ emp.department.name if emp.department else 'N/A' }}</td></tr>
+                    <tr><td class="text-muted">Position</td><td>{{ emp.position or 'N/A' }}</td></tr>
+                    <tr><td class="text-muted">Role</td><td class="text-capitalize">{{ emp.role }}</td></tr>
+                    <tr><td class="text-muted">Status</td><td>
+                        <span class="badge-status badge-{{ 'active' if emp.is_active else 'inactive' }}">
+                            {{ 'Active' if emp.is_active else 'Inactive' }}
+                        </span>
+                    </td></tr>
+                    <tr><td class="text-muted">Date Joined</td><td>{{ emp.date_joined.strftime('%d %b %Y') if emp.date_joined else 'N/A' }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Stats -->
+    <div class="col-lg-8 mb-4">
+        <div class="stats-grid mb-4">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+                <div class="stat-info">
+                    <h3>{{ monthly_stats.present }}</h3>
+                    <p>Present (This Month)</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3>{{ monthly_stats.late }}</h3>
+                    <p>Late</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3>{{ monthly_stats.total_hours }}</h3>
+                    <p>Total Hours</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Attendance -->
+        <div class="card">
+            <div class="card-header"><i class="fas fa-history me-2"></i>Recent Attendance</div>
+            <div class="card-body p-0">
+                {% if recent_attendance %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Clock In</th>
+                                <th>Clock Out</th>
+                                <th>Hours</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in recent_attendance %}
+                            <tr>
+                                <td>{{ record.date.strftime('%d %b %Y') }}</td>
+                                <td>{{ record.clock_in.strftime('%I:%M %p') if record.clock_in else '-' }}</td>
+                                <td>{{ record.clock_out.strftime('%I:%M %p') if record.clock_out else '-' }}</td>
+                                <td>{{ '%.1f'|format(record.work_hours) if record.work_hours else '-' }}</td>
+                                <td><span class="badge-status badge-{{ record.status }}">{{ record.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h5>No attendance records</h5>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
